@@ -28,6 +28,7 @@ class Climate(Device):
                  name,
                  group_address_temperature=None,
                  group_address_target_temperature=None,
+                 group_address_target_temperature_state=None,
                  group_address_setpoint_shift=None,
                  group_address_setpoint_shift_state=None,
                  setpoint_shift_step=DEFAULT_SETPOINT_SHIFT_STEP,
@@ -61,6 +62,7 @@ class Climate(Device):
         self.target_temperature = RemoteValueTemp(
             xknx,
             group_address_target_temperature,
+            group_address_target_temperature_state,
             device_name=self.name,
             after_update_cb=self.after_update)
         self.setpoint_shift = RemoteValue1Count(
@@ -95,6 +97,8 @@ class Climate(Device):
             config.get('group_address_temperature')
         group_address_target_temperature = \
             config.get('group_address_target_temperature')
+        group_address_target_temperature = \
+            config.get('group_address_target_temperature_state')
         group_address_setpoint_shift = \
             config.get('group_address_setpoint_shift')
         group_address_setpoint_shift_state = \
@@ -121,6 +125,7 @@ class Climate(Device):
                    name,
                    group_address_temperature=group_address_temperature,
                    group_address_target_temperature=group_address_target_temperature,
+                   group_address_target_temperature_state=group_address_target_temperature_state,
                    group_address_setpoint_shift=group_address_setpoint_shift,
                    group_address_setpoint_shift_state=group_address_setpoint_shift_state,
                    setpoint_shift_step=setpoint_shift_step,

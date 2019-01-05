@@ -9,7 +9,7 @@ import voluptuous as vol
 import homeassistant.helpers.config_validation as cv
 from homeassistant.components.climate import (
     PLATFORM_SCHEMA, SUPPORT_ON_OFF, SUPPORT_OPERATION_MODE,
-    SUPPORT_TARGET_TEMPERATURE, STATE_HEAT,
+    SUPPORT_TARGET_TEMPERATURE, STATE_HEAT, STATE_COOL, STATE_AUTO,
     STATE_IDLE, STATE_MANUAL, STATE_DRY,
     STATE_FAN_ONLY, STATE_ECO, ClimateDevice)
 from homeassistant.const import (
@@ -25,6 +25,7 @@ CONF_SETPOINT_SHIFT_MAX = 'setpoint_shift_max'
 CONF_SETPOINT_SHIFT_MIN = 'setpoint_shift_min'
 CONF_TEMPERATURE_ADDRESS = 'temperature_address'
 CONF_TARGET_TEMPERATURE_ADDRESS = 'target_temperature_address'
+CONF_TARGET_TEMPERATURE_STATE_ADDRESS = 'target_temperature_state_address'
 CONF_OPERATION_MODE_ADDRESS = 'operation_mode_address'
 CONF_OPERATION_MODE_STATE_ADDRESS = 'operation_mode_state_address'
 CONF_CONTROLLER_STATUS_ADDRESS = 'controller_status_address'
@@ -45,6 +46,8 @@ DEFAULT_NAME = 'XKNX Climate'
 DEFAULT_SETPOINT_SHIFT_STEP = 0.5
 DEFAULT_SETPOINT_SHIFT_MAX = 6
 DEFAULT_SETPOINT_SHIFT_MIN = -6
+DEFAULT_MIN_TEMP = 0.0
+DEFAULT_MAX_TEMP = 40.0
 DEPENDENCIES = ['xknx']
 
 # Map KNX operation modes to HA modes. This list might not be full.
@@ -53,10 +56,13 @@ OPERATION_MODES = {
     "Frost Protection": STATE_MANUAL,
     "Night": STATE_IDLE,
     "Standby": STATE_ECO,
-    "Comfort": STATE_HEAT,
+    "Heat": STATE_HEAT,
+    # Map DPT 20.105 HVAC controller modes
+    "Cool": STATE_COOL,
+    "Auto": STATE_AUTO,
     # Map DPT 201.104 HVAC control modes
     "Fan only": STATE_FAN_ONLY,
-    "Dehumidification": STATE_DRY
+    "Dry": STATE_DRY
 }
 
 OPERATION_MODES_INV = dict((
@@ -66,6 +72,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
     vol.Required(CONF_TEMPERATURE_ADDRESS): cv.string,
     vol.Required(CONF_TARGET_TEMPERATURE_ADDRESS): cv.string,
+    vol.Optional(CONF_TARGET_TEMPERATURE_STATE_ADDRESS): cv.string,
     vol.Optional(CONF_SETPOINT_SHIFT_ADDRESS): cv.string,
     vol.Optional(CONF_SETPOINT_SHIFT_STATE_ADDRESS): cv.string,
     vol.Optional(CONF_SETPOINT_SHIFT_STEP,
@@ -88,8 +95,8 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Optional(CONF_ON_OFF_STATE_ADDRESS): cv.string,
     vol.Optional(CONF_OPERATION_MODES): vol.All(cv.ensure_list,
                                                 [vol.In(OPERATION_MODES)]),
-    vol.Optional(CONF_MIN_TEMP): vol.Coerce(float),
-    vol.Optional(CONF_MAX_TEMP): vol.Coerce(float),
+    vol.Optional(CONF_MIN_TEMP, default=DEFAULT_MIN_TEMP): vol.Coerce(float),
+    vol.Optional(CONF_MAX_TEMP, default=DEFAULT_MAX_TEMP): vol.Coerce(float),
 })
 
 
@@ -147,6 +154,8 @@ def async_add_entities_config(hass, config, async_add_entities):
         group_address_temperature=config.get(CONF_TEMPERATURE_ADDRESS),
         group_address_target_temperature=config.get(
             CONF_TARGET_TEMPERATURE_ADDRESS),
+        group_address_target_temperature_state=config.get(
+            CONF_TARGET_TEMPERATURE_STATE_ADDRESS),
         group_address_setpoint_shift=config.get(CONF_SETPOINT_SHIFT_ADDRESS),
         group_address_setpoint_shift_state=config.get(
             CONF_SETPOINT_SHIFT_STATE_ADDRESS),
