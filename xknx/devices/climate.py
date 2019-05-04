@@ -42,7 +42,7 @@ class Climate(Device):
                  device_updated_cb=None):
         """Initialize Climate class."""
         # pylint: disable=too-many-arguments, too-many-locals, too-many-branches, too-many-statements
-        super(Climate, self).__init__(xknx, name, device_updated_cb)
+        super().__init__(xknx, name, device_updated_cb)
         if isinstance(group_address_on_off, (str, int)):
             group_address_on_off = GroupAddress(group_address_on_off)
         if isinstance(group_address_on_off_state, (str, int)):
@@ -97,7 +97,7 @@ class Climate(Device):
             config.get('group_address_temperature')
         group_address_target_temperature = \
             config.get('group_address_target_temperature')
-        group_address_target_temperature = \
+        group_address_target_temperature_state = \
             config.get('group_address_target_temperature_state')
         group_address_setpoint_shift = \
             config.get('group_address_setpoint_shift')
@@ -113,6 +113,8 @@ class Climate(Device):
             config.get('group_address_on_off')
         group_address_on_off_state = \
             config.get('group_address_on_off_state')
+        min_temp = config.get('min_temp')
+        max_temp = config.get('max_temp')
 
         climate_mode = None
         if "mode" in config:
@@ -133,6 +135,8 @@ class Climate(Device):
                    setpoint_shift_min=setpoint_shift_min,
                    group_address_on_off=group_address_on_off,
                    group_address_on_off_state=group_address_on_off_state,
+                   min_temp=min_temp,
+                   max_temp=max_temp,
                    mode=climate_mode)
 
     def has_group_address(self, group_address):
@@ -147,7 +151,8 @@ class Climate(Device):
     @property
     def is_on(self):
         """Return power status."""
-        return bool(self.on.value and self.on.value.value == 1)
+        # None will return False
+        return bool(self.on.value)
 
     async def turn_on(self):
         """Set power status to on."""
@@ -185,7 +190,7 @@ class Climate(Device):
 
         if setpoint_shift > self.setpoint_shift_max:
             raise DeviceIllegalValue("setpoint_shift_max exceeded", setpoint_shift)
-        elif setpoint_shift < self.setpoint_shift_min:
+        if setpoint_shift < self.setpoint_shift_min:
             raise DeviceIllegalValue("setpoint_shift_min exceeded", setpoint_shift)
 
         await self.setpoint_shift.set(setpoint_shift)

@@ -21,6 +21,8 @@ class Light(Device):
     """Class for managing a light."""
 
     # pylint: disable=too-many-locals
+    DEFAULT_MIN_KELVIN = 2700  # 370 mireds
+    DEFAULT_MAX_KELVIN = 6000  # 166 mireds
 
     def __init__(self,
                  xknx,
@@ -40,7 +42,7 @@ class Light(Device):
                  device_updated_cb=None):
         """Initialize Light class."""
         # pylint: disable=too-many-arguments
-        super(Light, self).__init__(xknx, name, device_updated_cb)
+        super().__init__(xknx, name, device_updated_cb)
 
         self.switch = RemoteValueSwitch(
             xknx,
@@ -128,9 +130,9 @@ class Light(Device):
         group_address_color_temperature_state = \
             config.get('group_address_color_temperature_state')
         min_kelvin = \
-            config.get('min_kelvin')
+            config.get('min_kelvin', Light.DEFAULT_MIN_KELVIN)
         max_kelvin = \
-            config.get('max_kelvin')
+            config.get('max_kelvin', Light.DEFAULT_MAX_KELVIN)
 
         return cls(xknx,
                    name,
@@ -186,7 +188,8 @@ class Light(Device):
     @property
     def state(self):
         """Return the current switch state of the device."""
-        return self.switch.value == RemoteValueSwitch.Value.ON
+        # None will return False
+        return bool(self.switch.value)
 
     async def set_on(self):
         """Switch light on."""

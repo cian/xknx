@@ -29,12 +29,13 @@ class TestSensor(unittest.TestCase):
         sensor = Sensor(
             xknx,
             'TestSensor',
-            group_address='1/2/3',
+            group_address_state='1/2/3',
             value_type="percent")
         sensor.sensor_value.payload = DPTArray((0x40,))
 
         self.assertEqual(sensor.resolve_state(), 25)
         self.assertEqual(sensor.unit_of_measurement(), "%")
+        self.assertEqual(sensor.ha_device_class(), None)
 
     def test_str_speed_ms(self):
         """Test resolve state with speed_ms sensor."""
@@ -42,12 +43,13 @@ class TestSensor(unittest.TestCase):
         sensor = Sensor(
             xknx,
             'TestSensor',
-            group_address='1/2/3',
+            group_address_state='1/2/3',
             value_type="speed_ms")
         sensor.sensor_value.payload = DPTArray((0x00, 0x1b,))
 
         self.assertEqual(sensor.resolve_state(), 0.27)
         self.assertEqual(sensor.unit_of_measurement(), "m/s")
+        self.assertEqual(sensor.ha_device_class(), None)
 
     def test_str_temp(self):
         """Test resolve state with temperature sensor."""
@@ -55,12 +57,13 @@ class TestSensor(unittest.TestCase):
         sensor = Sensor(
             xknx,
             'TestSensor',
-            group_address='1/2/3',
+            group_address_state='1/2/3',
             value_type="temperature")
         sensor.sensor_value.payload = DPTArray((0x0c, 0x1a))
 
         self.assertEqual(sensor.resolve_state(), 21.00)
         self.assertEqual(sensor.unit_of_measurement(), "°C")
+        self.assertEqual(sensor.ha_device_class(), "temperature")
 
     def test_str_humidity(self):
         """Test resolve state with humidity sensor."""
@@ -68,12 +71,13 @@ class TestSensor(unittest.TestCase):
         sensor = Sensor(
             xknx,
             'TestSensor',
-            group_address='1/2/3',
+            group_address_state='1/2/3',
             value_type="humidity")
         sensor.sensor_value.payload = DPTArray((0x0e, 0x73))
 
         self.assertEqual(sensor.resolve_state(), 33.02)
         self.assertEqual(sensor.unit_of_measurement(), "%")
+        self.assertEqual(sensor.ha_device_class(), "humidity")
 
     def test_str_power(self):
         """Test resolve state with power sensor."""
@@ -81,12 +85,13 @@ class TestSensor(unittest.TestCase):
         sensor = Sensor(
             xknx,
             'TestSensor',
-            group_address='1/2/3',
+            group_address_state='1/2/3',
             value_type="power")
         sensor.sensor_value.payload = DPTArray((0x43, 0xC6, 0x80, 00))
 
         self.assertEqual(sensor.resolve_state(), 397)
         self.assertEqual(sensor.unit_of_measurement(), "W")
+        self.assertEqual(sensor.ha_device_class(), "power")
 
     def test_str_electric_potential(self):
         """Test resolve state with voltage sensor."""
@@ -94,7 +99,7 @@ class TestSensor(unittest.TestCase):
         sensor = Sensor(
             xknx,
             'TestSensor',
-            group_address='1/2/3',
+            group_address_state='1/2/3',
             value_type="electric_potential")
         sensor.sensor_value.payload = DPTArray((0x43, 0x65, 0xE3, 0xD7))
 
@@ -111,7 +116,7 @@ class TestSensor(unittest.TestCase):
             xknx,
             'TestSensor',
             value_type="temperature",
-            group_address='1/2/3')
+            group_address_state='1/2/3')
 
         self.loop.run_until_complete(asyncio.Task(sensor.sync(False)))
 
@@ -131,7 +136,7 @@ class TestSensor(unittest.TestCase):
             xknx,
             'TestSensor',
             value_type='temperature',
-            group_address='1/2/3')
+            group_address_state='1/2/3')
         self.assertTrue(sensor.has_group_address(GroupAddress('1/2/3')))
         self.assertFalse(sensor.has_group_address(GroupAddress('1/2/4')))
 
@@ -145,7 +150,7 @@ class TestSensor(unittest.TestCase):
             xknx,
             'TestSensor',
             value_type='temperature',
-            group_address='1/2/3')
+            group_address_state='1/2/3')
         self.assertEqual(sensor.state_addresses(), [GroupAddress('1/2/3')])
 
     #
@@ -158,7 +163,7 @@ class TestSensor(unittest.TestCase):
             xknx,
             'TestSensor',
             value_type='temperature',
-            group_address='1/2/3')
+            group_address_state='1/2/3')
 
         telegram = Telegram(GroupAddress('1/2/3'))
         telegram.payload = DPTArray((0x06, 0xa0))
@@ -173,7 +178,7 @@ class TestSensor(unittest.TestCase):
         sensor = Sensor(
             xknx,
             'TestSensor',
-            group_address='1/2/3',
+            group_address_state='1/2/3',
             value_type="temperature")
 
         after_update_callback = Mock()
